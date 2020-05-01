@@ -1,13 +1,13 @@
 import pandas as pd
 import numpy as np
-jiance1 = pd.read_excel('C://users/94880/desktop/实验室/shuju/监测1.xls')
-jiance2 = pd.read_excel('C://users/94880/desktop/实验室/shuju/监测2.xls')
-jiance3 = pd.read_excel('C://users/94880/desktop/实验室/shuju/监测3.xls')
-jiance4 = pd.read_excel('C://users/94880/desktop/实验室/shuju/监测4.xls')
-qixiang1 = pd.read_excel('C://users/94880/desktop/实验室/shuju/气象1.xls',index_col=None)
-qixiang2 = pd.read_excel('C://users/94880/desktop/实验室/shuju/气象2.xls',index_col=None)
-qixiang3 = pd.read_excel('C://users/94880/desktop/实验室/shuju/气象3.xls',index_col=None)
-qixiang4 = pd.read_excel('C://users/94880/desktop/实验室/shuju/气象4.xls',index_col=None)  # 源数据读取
+jiance1 = pd.read_excel('监测1.xls')
+jiance2 = pd.read_excel('监测2.xls')
+jiance3 = pd.read_excel('监测3.xls')
+jiance4 = pd.read_excel('监测4.xls')
+qixiang1 = pd.read_excel('气象1.xls',index_col=None)
+qixiang2 = pd.read_excel('气象2.xls',index_col=None)
+qixiang3 = pd.read_excel('气象3.xls',index_col=None)
+qixiang4 = pd.read_excel('气象4.xls',index_col=None)  # 源数据读取
 
 jiance_data = jiance1.append(jiance2)
 jiance_data = jiance_data.append(jiance3)
@@ -52,6 +52,27 @@ decomposer = EMD(y_data_3)
 imfs = decomposer.decompose()
 # y_data_3 = y_data[31:]   
 
+# 多层小波分解
+import pywt
+coeffs = pywt.wavedec(y_data_3, 'db1' ,level=3)
+# coeffs[0] = np.zeros_like(coeffs[0])
+coeffs[1] = np.zeros_like(coeffs[1])
+coeffs[2] = np.zeros_like(coeffs[2])
+coeffs[3] = np.zeros_like(coeffs[3])
+data_cD_0 = pywt.waverec(coeffs, 'db1')
+
+#arima
+from statsmodels.tsa.arima_model import ARIMA 
+y_data = list(y_data)
+pre_ar = []
+test_ar = []
+import random
+for i in range(1000, 3000):
+    # j = random.randint(2000,7296)
+    # test_ar.append(y_data[j+6])
+    model_ar = ARIMA(y_data[i-1000:i],(1,1,1)).fit()
+    pre_ar.append(model_ar.forecast(7)[0][6])
+  
 from keras.layers import Dense,LSTM,Dropout
 from keras.models import Sequential
 from sklearn.model_selection import train_test_split # 划分训练集和测试集
